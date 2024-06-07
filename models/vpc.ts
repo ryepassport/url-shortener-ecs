@@ -5,7 +5,7 @@ export interface VPCCidr {
   /**
    * The CIDR block for the VPC.
    */
-  cidr: string
+  cidrBlock: string
   /**
    * The CIDR blocks for the public subnets.
    */
