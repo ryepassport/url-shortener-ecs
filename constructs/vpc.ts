@@ -12,7 +12,7 @@ import { NatGateway } from '@cdktf/provider-aws/lib/nat-gateway'
 import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-association'
 
 
-const PUBLIC_CIDR = '0.0.0.0/0'
+export const PUBLIC_CIDR = '0.0.0.0/0'
 
 /**
  * Represents the network IDs of a VPC.
