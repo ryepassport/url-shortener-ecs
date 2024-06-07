@@ -1,16 +1,17 @@
 import { App } from 'cdktf'
 import { Credentials } from '../models/common'
-import { VpcNetwork, VPCNetworkStackProps } from '../constructs/vpc'
+import { VpcNetwork } from '../constructs/vpc'
+import { EksStack } from '../constructs/eks'
 
 const credentials: Credentials = {
   accessKey: process.env.AWS_ACCESS_KEY_ID as string,
   secretKey: process.env.AWS_SECRET_ACCESS_KEY as string,
-  region: process.env.AWS_DEFAULT_REGION as string
+  region: 'eu-west-1'
 }
 
 const app = new App()
 
-const vpcProps: VPCNetworkStackProps = {
+const vpcNetwork = new VpcNetwork(app, {
   credentials,
   id: 'url-shortener-vpc',
   cidr: {
@@ -29,10 +30,25 @@ const vpcProps: VPCNetworkStackProps = {
   tags: {
     name: 'url-shortener-vpc',
     costCenter: 'cost-tag-example-vpc',
-    project: 'url-shortener-vpc',
+    project: 'url-shortener',
     service: 'url-shortener-vpc',
     owner: 'profile-name'
   }
-}
+})
 
-const vpcNetwork = new VpcNetwork(app, vpcProps)
+const eksStack = new EksStack(app, {
+  credentials,
+  id: 'url-shortener-eks',
+  vpcNetwork,
+  tags: {
+    name: 'url-shortener-eks',
+    costCenter: 'cost-tag-example-eks',
+    project: 'url-shortener',
+    service: 'url-shortener-eks',
+    owner: 'profile-name'
+  }
+})
+
+eksStack.addDependency(vpcNetwork)
+
+app.synth()
