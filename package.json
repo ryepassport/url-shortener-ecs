@@ -14,7 +14,13 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "upgrade": "npm i cdktf@latest cdktf-cli@latest",
-    "upgrade:next": "npm i cdktf@next cdktf-cli@next"
+    "upgrade:next": "npm i cdktf@next cdktf-cli@next",
+    "deploy:vpc": "cdktf deploy url-shortener-vpc --auto-approve",
+    "destroy:vpc": "cdktf destroy url-shortener-vpc --auto-approve",
+    "deploy:ecs": "cdktf deploy url-shortener-ecs --auto-approve",
+    "destroy:ecs": "cdktf destroy url-shortener-ecs --auto-approve",
+    "deploy:s3-backend": "cdktf deploy url-shortener-terraform-state-backend --auto-approve",
+    "destroy:s3-backend": "cdktf destroy url-shortener-terraform-state-backend --auto-approve"
   },
   "engines": {
     "node": ">=18.0"
