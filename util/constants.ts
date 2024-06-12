@@ -4,13 +4,19 @@ import { VPCCidr } from '../models/vpc';
  * The CIDR block for the VPC.
  */
 export const VPC_CIDR: VPCCidr = {
-  cidr: '192.168.0.0/16',
+  cidrBlock: '10.0.0.0/16',
   publicCIDRs: [
-    '192.168.0.0/18',
-    '192.168.64.0/18',
+    '10.0.96.0/19',
+    '10.0.128.0/19',
+    '10.0.160.0/19'
   ],
   privateCIDRs: [
-    '192.168.128.0/18',
-    '192.168.192.0/18'
+    '10.0.0.0/19',
+    '10.0.32.0/19',
+    '10.0.64.0/19',
   ]
 }
+
+
+export const STATE_BUCKET_NAME = 'url-shortener-terraform-state-rye-pasaporte'
+export const STATE_DYNAMO_TABLE_NAME = 'url-shortener-terraform-state-lock'
