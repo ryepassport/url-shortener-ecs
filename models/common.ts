@@ -1,16 +1,21 @@
 /**
  * Represents the credentials required for authentication.
  */
-export interface Credentials {
+export interface AWSCredentials {
   /**
    * The access key for authentication.
    */
-  accessKey: string
+  accessKey?: string
 
   /**
    * The secret key for authentication.
    */
-  secretKey: string
+  secretKey?: string
+
+  /**
+   * 
+   */
+  profile?: string
 
   /**
    * The region for authentication.
@@ -29,9 +34,9 @@ export interface CommonStackProps {
   id: string
 
   /**
-   * The credentials for the stack.
+   * The locally installed profile for the stack.
    */
-  credentials: Credentials
+  credentials: AWSCredentials
 
   /**
    * Optional tags for the stack.
