@@ -1,4 +1,4 @@
-import { TerraformStack } from 'cdktf'
+import { S3Backend, TerraformStack } from 'cdktf'
 import { CommonStackProps } from '../models/common';
 import { EksCluster } from '@cdktf/provider-aws/lib/eks-cluster';
 import { IamOpenidConnectProvider } from '@cdktf/provider-aws/lib/iam-openid-connect-provider';
@@ -14,6 +14,7 @@ import { DataTlsCertificate } from '@cdktf/provider-tls/lib/data-tls-certificate
 import { RandomProvider } from '@cdktf/provider-random/lib/provider';
 import { NullProvider } from '@cdktf/provider-null/lib/provider';
 import { Resource } from '@cdktf/provider-null/lib/resource';
+import { STATE_BUCKET_NAME, STATE_DYNAMO_TABLE_NAME } from '../util/constants';
 
 const EKS_POLICIES = ['AmazonEKSClusterPolicy', 'AmazonEKSServicePolicy']
 
@@ -50,6 +51,18 @@ export class EksStack extends TerraformStack {
     super(scope, props.id);
 
     const { credentials, vpcNetwork, tags } = props;
+
+    // setting backend for storing the Terraform state
+    new S3Backend(this, {
+      bucket: STATE_BUCKET_NAME,
+      key: 'url-shortener-terraform-state.tfstate',
+      encrypt: true,
+      dynamodbTable: STATE_DYNAMO_TABLE_NAME,
+      profile: credentials.profile,
+      region: credentials.region,
+    })
+
+    
     const { vpcId, vpcPrivateSubnetIds, vpcPublicSubnetIds } = vpcNetwork;
 
     new AwsProvider(this, 'aws', credentials);

@@ -1,4 +1,4 @@
-import { TerraformStack } from 'cdktf'
+import { S3Backend, TerraformStack } from 'cdktf'
 import { Construct } from 'constructs'
 import { CommonStackProps } from '../models/common'
 import { VPCCidr } from '../models/vpc'
@@ -10,7 +10,7 @@ import { InternetGateway } from '@cdktf/provider-aws/lib/internet-gateway'
 import { Eip } from '@cdktf/provider-aws/lib/eip'
 import { NatGateway } from '@cdktf/provider-aws/lib/nat-gateway'
 import { RouteTableAssociation } from '@cdktf/provider-aws/lib/route-table-association'
-
+import { STATE_BUCKET_NAME, STATE_DYNAMO_TABLE_NAME } from '../util/constants'
 
 export const PUBLIC_CIDR = '0.0.0.0/0'
 
@@ -63,14 +63,25 @@ export class VpcNetwork extends TerraformStack {
   constructor(app: Construct, props: VPCNetworkStackProps) {
     super(app, props.id);
 
-    const { credentials, id, cidr } = props;
+    const { credentials, id, cidr, tags } = props;
     const { cidrBlock, publicCIDRs, privateCIDRs } = cidr;
+
+
+    // S3 bucket for storing the Terraform state
+    new S3Backend(this, {
+      bucket: STATE_BUCKET_NAME,
+      key: 'url-shortener-terraform-state.tfstate',
+      encrypt: true,
+      dynamodbTable: STATE_DYNAMO_TABLE_NAME,
+      ...credentials
+    })
 
     new AwsProvider(this, 'aws', credentials);
 
     // Create the VPC
     const vpc = new Vpc(this, id, {
       cidrBlock,
+      tags,
     });
 
     this.vpcId = vpc.id;
@@ -97,14 +108,15 @@ export class VpcNetwork extends TerraformStack {
   private constructSubnets(vpcId: string, cidrs: string[], type: string): string[] {
     const azs = ['eu-west-1a', 'eu-west-1b', 'eu-west-1c'];
     const subnetIds = [];
-
+    
     for (let i = 0; i < azs.length; i++) {
-      const subnet = new Subnet(this, `${vpcId}-${type}-${i}`, {
+      const subnet = new Subnet(this, `subnet-${type}-${i+1}`, {
         vpcId,
         cidrBlock: cidrs[i],
         availabilityZone: azs[i],
         tags: {
           Name: `${vpcId}-${type}-${i}`,
+          VpcId: vpcId,
         },
       });
 
@@ -118,7 +130,7 @@ export class VpcNetwork extends TerraformStack {
    * Constructs the gateways and routes for the VPC.
    * @param vpcNetworkIds - The IDs of the VPC and subnets.
    */
-  public constructGatewaysAndRoutes(vpcNetworkIds: VpcNetworkIds): void {
+  private constructGatewaysAndRoutes(vpcNetworkIds: VpcNetworkIds): void {
     const { vpcId, vpcPublicSubnetIds, vpcPrivateSubnetIds } = vpcNetworkIds;
 
     const internetGateway = new InternetGateway(this, 'internet-gateway', {
